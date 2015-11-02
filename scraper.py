@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 #### IMPORTS 1.0
@@ -7,11 +6,9 @@ import os
 import re
 import scraperwiki
 import urllib2
-import requests
 from datetime import datetime
 from bs4 import BeautifulSoup
-from dateutil.parser import parse
-import itertools
+
 
 #### FUNCTIONS 1.0
 
@@ -40,24 +37,27 @@ def validateFilename(filename):
 
 
 def validateURL(url):
-     try:
-        r = requests.get(url, allow_redirects=True, timeout=20)
+    try:
+        r = urllib2.urlopen(url)
         count = 1
-        while r.status_code == 500 and count < 4:
+        while r.getcode() == 500 and count < 4:
             print ("Attempt {0} - Status code: {1}. Retrying.".format(count, r.status_code))
             count += 1
-            r = requests.get(url, allow_redirects=True, timeout=20)
+            r = urllib2.urlopen(url)
         sourceFilename = r.headers.get('Content-Disposition')
+
         if sourceFilename:
             ext = os.path.splitext(sourceFilename)[1].replace('"', '').replace(';', '').replace(' ', '')
         else:
             ext = os.path.splitext(url)[1]
-        validURL = r.status_code == 200
-        validFiletype = ext in ['.csv', '.xls', '.xlsx']
+        validURL = r.getcode() == 200
+        validFiletype = ext.lower() in ['.csv', '.xls', '.xlsx']
         return validURL, validFiletype
-     except:
+    except:
         print ("Error validating URL.")
         return False, False
+
+
 
 def validate(filename, file_url):
     validFilename = validateFilename(filename)
@@ -93,21 +93,21 @@ data = []
 
 #### READ HTML 1.0
 
-
-
 html = urllib2.urlopen(url)
 soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
 
-block = soup.find('div', 'content')
+block = soup.find('section', 'content-boxes').find('article', 'content-item grey').find_next('article', 'content-item grey')
 links = block.findAll('li')
+
 for link in links:
     try:
         csvfile = link.a.text.strip()
         if 'CSV' in csvfile:
-            url = 'http://www.northumberland.gov.uk/' + link.a['href']
+            if 'http://' not in link.a['href']:
+                url = 'http://www.northumberland.gov.uk/' + link.a['href']
             title = link.a['title']
             csvYr = title.split(' payment')[0][-4:]
             if 'ents' in csvYr:
