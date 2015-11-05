@@ -108,10 +108,8 @@ for link in links:
         if 'CSV' in csvfile:
             if 'http://' not in link.a['href']:
                 url = 'http://www.northumberland.gov.uk/' + link.a['href']
-            title = link.a['title']
-            csvYr = title.split(' payment')[0][-4:]
-            if 'ents' in csvYr:
-                csvYr = '2011'
+            title = link.a.previousSibling.split(':')[0]
+            csvYr = title[-4:]
             csvMth = title[:3]
             csvMth = convert_mth_strings(csvMth.upper())
             data.append([csvYr, csvMth, url])
