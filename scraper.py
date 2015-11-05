@@ -103,19 +103,19 @@ block = soup.find('section', 'content-boxes').find('article', 'content-item grey
 links = block.findAll('li')
 
 for link in links:
-    csvfile = link.a.text.strip()
-    print(csvfile)
-    if 'CSV' in csvfile:
-        if 'http://' not in link.a['href']:
-            url = 'http://www.northumberland.gov.uk/' + link.a['href']
-        title = link.a['title']
-        csvYr = title.split(' payment')[0][-4:]
-        if 'ents' in csvYr:
-            csvYr = '2011'
-        csvMth = title[:3]
-        csvMth = convert_mth_strings(csvMth.upper())
-        data.append([csvYr, csvMth, url])
-
+    try:
+        csvfile = link.a.text.strip()
+        if 'CSV' in csvfile:
+            if 'http://' not in link.a['href']:
+                url = 'http://www.northumberland.gov.uk/' + link.a['href']
+            title = link.a['title']
+            csvYr = title.split(' payment')[0][-4:]
+            if 'ents' in csvYr:
+                csvYr = '2011'
+            csvMth = title[:3]
+            csvMth = convert_mth_strings(csvMth.upper())
+            data.append([csvYr, csvMth, url])
+    except: break
 
 #### STORE DATA 1.0
 
