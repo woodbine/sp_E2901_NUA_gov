@@ -108,6 +108,8 @@ for link in links:
         if 'CSV' in csvfile:
             if 'http://' not in link.a['href']:
                 url = 'http://www.northumberland.gov.uk/' + link.a['href']
+            else:
+                url = link.a['href']
             title = link.a.previousSibling.split(':')[0]
             csvYr = title[-4:]
             csvMth = title[:3]
