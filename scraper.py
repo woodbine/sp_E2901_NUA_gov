@@ -102,24 +102,27 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-
-block = soup.find('section', 'content-boxes').find('article', 'content-item grey').find_next('article', 'content-item grey').find_next('article', 'content-item grey')
-links = block.findAll('li')
-
-for link in links:
-    try:
-        csvfile = link.a.text.strip()
-        if 'CSV' in csvfile:
-            if 'http://' not in link.a['href']:
-                url = 'http://www.northumberland.gov.uk/' + link.a['href']
-            else:
-                url = link.a['href']
-            title = link.a.previousSibling.split(':')[0]
-            csvYr = title[-4:]
-            csvMth = title[:3]
-            csvMth = convert_mth_strings(csvMth.upper())
-            data.append([csvYr, csvMth, url])
-    except: break
+blocks = soup.find_all('li')
+for block in blocks:
+    links = block.findAll('a')
+    for link in links:
+        try:
+            csvfile = link.text.strip()
+            if 'CSV' in csvfile:
+                if 'http://' not in link['href']:
+                    url = 'http://www.northumberland.gov.uk/' + link['href']
+                else:
+                    url = link['href']
+                title = link.find_previous('li').text.split(':')[0].strip()
+                csvYr = title[-4:]
+                csvMth = title[:3]
+                if 'PDF' in csvYr:
+                    title = link.find_previous('li').text.split()
+                    csvYr = title[1][-4:]
+                    csvMth = title[0][:3]
+                csvMth = convert_mth_strings(csvMth.upper())
+                data.append([csvYr, csvMth, url])
+        except: break
 
 #### STORE DATA 1.0
 
@@ -142,5 +145,3 @@ if errors > 0:
 
 
 #### EOF
-
-
