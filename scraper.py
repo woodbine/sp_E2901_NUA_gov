@@ -91,7 +91,7 @@ def convert_mth_strings ( mth_string ):
 #### VARIABLES 1.0
 
 entity_id = "E2901_NUA_gov"
-url = "http://www.northumberland.gov.uk/default.aspx?page=9100"
+url = "http://www.northumberland.gov.uk/About/Transparency.aspx#paymentstosuppliers"
 errors = 0
 data = []
 
@@ -102,27 +102,25 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-blocks = soup.find_all('li')
+blocks = soup.find_all('h5')
 for block in blocks:
-    links = block.findAll('a')
+    links = block.find_next('div').find_all('a')
     for link in links:
-        try:
-            csvfile = link.text.strip()
-            if 'CSV' in csvfile:
-                if 'http://' not in link['href']:
-                    url = 'http://www.northumberland.gov.uk/' + link['href']
-                else:
-                    url = link['href']
-                title = link.find_previous('li').text.split(':')[0].strip()
-                csvYr = title[-4:]
-                csvMth = title[:3]
-                if 'PDF' in csvYr:
-                    title = link.find_previous('li').text.split()
-                    csvYr = title[1][-4:]
-                    csvMth = title[0][:3]
-                csvMth = convert_mth_strings(csvMth.upper())
-                data.append([csvYr, csvMth, url])
-        except: break
+        if '.csv' in link['href']:
+            if 'http://' not in link['href']:
+                url = 'http://www.northumberland.gov.uk/' + link['href']
+            else:
+                url = link['href']
+            title = url.split('/')[-1].split('_')
+            if len(title[0]) == 3:
+                csvMth = title[0][:3]
+                csvYr = title[1]
+            else:
+                csvMth = title[0][:3]
+                csvYr = title[0][-4:]
+            csvMth = convert_mth_strings(csvMth.upper())
+            data.append([csvYr, csvMth, url])
+
 
 #### STORE DATA 1.0
 
